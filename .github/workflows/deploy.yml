@@ -30,16 +30,24 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@v3
 
-    - name: Configure Kubeconfig for AKS
+    - name: Configure kubeconfig
       run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
       env:
-        KUBECONFIG: $HOME/.kube/config
+        KUBECONFIG: ~/.kube/config
+
+    - name: Debug Kubeconfig
+      run: |
+        kubectl config get-contexts
+        kubectl config current-context
+        kubectl cluster-info
+      env:
+        KUBECONFIG: ~/.kube/config
 
     - name: Deploy to AKS
       run: |
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
       env:
-        KUBECONFIG: $HOME/.kube/config
+        KUBECONFIG: ~/.kube/config
