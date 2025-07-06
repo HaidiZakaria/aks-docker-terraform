@@ -3,7 +3,7 @@ name: Build and Deploy to AKS
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   IMAGE_NAME: flask-aks-demo
@@ -24,6 +24,7 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
+        ls -l
         docker build -t ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:latest
 
@@ -31,12 +32,12 @@ jobs:
       uses: azure/setup-kubectl@v3
 
     - name: Set up Kubeconfig
-      run: echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $GITHUB_WORKSPACE/kubeconfig
-
-    - name: Export kubeconfig path
-      run: echo "KUBECONFIG=$GITHUB_WORKSPACE/kubeconfig" >> $GITHUB_ENV
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
 
     - name: Deploy to AKS
       run: |
-        kubectl apply -n flask -f k8s/deployment.yaml
-        kubectl apply -n flask -f k8s/service.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+
