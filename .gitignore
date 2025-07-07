@@ -1,9 +1,10 @@
-.terraform/
-*.tfstate
-*.tfstate.*
-terraform.tfvars
-*.log
+# In your .gitignore (if not already there)
 
-__pycache__/
-*.pyc
-.vscode/
+# Ignore kubeconfig files
+aks-kubeconfig
+clean-kubeconfig
+kubeconfig.b64.txt
+
+# If not already ignored
+*.tfstate
+.terraform/
