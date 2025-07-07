@@ -3,14 +3,19 @@ name: Build and Deploy to AKS
 on:
   push:
     branches:
+      - master  # or 'main' if that's your branch name
+  pull_request:
+    types: [closed]
+    branches:
       - master
-
-env:
-  IMAGE_NAME: flask-aks-demo
 
 jobs:
   build-and-deploy:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: flask-aks-demo
 
     steps:
     - name: Checkout Code
@@ -30,15 +35,12 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@v3
 
-    - name: Decode Kubeconfig
+    - name: Set up Kubeconfig
       run: |
         echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
 
-    - name: Set Context and Deploy
-      env:
-        KUBECONFIG: ${{ github.workspace }}/kubeconfig
+    - name: Deploy to AKS
       run: |
-        kubectl config use-context aksdemo-aks
-        kubectl get nodes
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
